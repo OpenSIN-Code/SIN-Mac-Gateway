@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sin-mac-gateway"
+version = "0.2.0"
+description = "Provider-neutral authenticated Remote MCP gateway for trusted SIN Macs"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+  "mcp==2.0.0",
+  "uvicorn>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.28"]
+
+[project.scripts]
+sin-mac-gateway = "sin_mac_gateway.app:main"
+sin-mac-gateway-service = "sin_mac_gateway.service:main"
+sin-mac-gateway-bootstrap = "sin_mac_gateway.bootstrap:main"
+sin-mac-gateway-credentials = "sin_mac_gateway.credentials:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
