@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 from starlette.testclient import TestClient
 
 from sin_mac_gateway.app import create_app
+from sin_mac_gateway.oauth import SQLiteOAuthProvider
 from test_app import fake_backend
 
 PUBLIC = 'https://sin-mac-gateway.delqhi.com'
@@ -104,3 +105,23 @@ def test_oauth_discovery_auth_code_refresh_and_protected_mcp(tmp_path: Path):
         )
         assert refreshed.status_code == 200, refreshed.text
         assert refreshed.json()['access_token'] != tokens['access_token']
+
+
+def test_oauth_connection_context_closes_connection(tmp_path: Path):
+    provider = SQLiteOAuthProvider(
+        db_path=str(tmp_path / "provider.sqlite3"),
+        client_id="claude-test",
+        client_secret="test-secret-please-change",
+    )
+    connection = provider._connect()
+    assert hasattr(connection, "__enter__")
+    with connection as db:
+        db.execute("SELECT 1")
+    # A closed sqlite connection rejects further use; this guards the
+    # descriptor-leak fix behind the provider's real connection path.
+    try:
+        db.execute("SELECT 1")
+    except Exception as exc:
+        assert "closed" in str(exc).lower()
+    else:
+        raise AssertionError("OAuth connection remained open after context exit")

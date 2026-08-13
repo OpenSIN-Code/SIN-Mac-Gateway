@@ -5,6 +5,7 @@ import os
 import secrets
 import sqlite3
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -46,10 +47,22 @@ class SQLiteOAuthProvider(OAuthAuthorizationServerProvider[AuthorizationCode, Re
         )
         self._init_db()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
+        """Open one SQLite connection and always release its descriptors.
+
+        sqlite3.Connection.__exit__ only commits/rolls back; it does not close
+        the connection.  The OAuth verifier runs for every MCP request, so
+        leaving connections open eventually exhausts the process file-descriptor
+        limit (and WAL/SHM handles).
+        """
         connection = sqlite3.connect(self.db_path)
         connection.row_factory = sqlite3.Row
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _init_db(self) -> None:
         with self._connect() as db:
