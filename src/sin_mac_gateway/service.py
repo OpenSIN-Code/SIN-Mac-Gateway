@@ -7,6 +7,7 @@ from pathlib import Path
 import uvicorn
 
 from .app import create_app
+from .secret_loader import read_secret_file_or_infisical
 
 
 def _default_config_path() -> Path:
@@ -25,8 +26,7 @@ def load_config(path: Path) -> dict:
 def main() -> None:
     config_path = _default_config_path()
     config = load_config(config_path)
-    secret_path = Path(config["client_secret_file"]).expanduser()
-    client_secret = secret_path.read_text(encoding="utf-8").strip()
+    client_secret = read_secret_file_or_infisical(config["client_secret_file"])
     if len(client_secret) < 32:
         raise RuntimeError("OAuth client secret is missing or too short")
 

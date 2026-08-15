@@ -40,7 +40,7 @@ Re-run bootstrap with `--rotate-client-secret`, then remove and re-add the Claud
 Default locations:
 
 - `~/.config/sin-mac-gateway/config.json`
-- `~/.config/sin-mac-gateway/oauth-client-secret`
+- `~/.config/sin-mac-gateway/oauth-client-secret` is a legacy source identifier; when the file is absent the runtime materializes it transiently from SIN-Infisical and immediately removes the temporary copy.
 - `~/.local/state/sin-mac-gateway/oauth.sqlite3`
 - `~/.local/state/sin-mac-gateway/audit.jsonl`
 - `~/Library/Logs/SIN-Mac-Gateway/gateway.log`

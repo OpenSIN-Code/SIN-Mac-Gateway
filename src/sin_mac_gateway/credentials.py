@@ -6,6 +6,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from .secret_loader import read_secret_file_or_infisical
+
 
 def _config() -> dict:
     path = Path(os.environ.get("SIN_MAC_GATEWAY_CONFIG", "~/.config/sin-mac-gateway/config.json")).expanduser()
@@ -21,7 +23,7 @@ def main() -> None:
     print(f"url={config['public_base_url']}/mcp")
     print(f"client_id={config['client_id']}")
     if args.copy_secret:
-        secret = Path(config["client_secret_file"]).expanduser().read_text(encoding="utf-8").strip()
+        secret = read_secret_file_or_infisical(config["client_secret_file"])
         subprocess.run(["/usr/bin/pbcopy"], input=secret.encode(), check=True)
         print("client_secret=copied-to-clipboard")
     else:
